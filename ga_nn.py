@@ -18,7 +18,7 @@ def sigmoid_prime(z):
     return sigmoid(z)*(1-sigmoid(z))
 
 class Network:
-    # sizes is a list of the number of nodes in each layer
+   
     def __init__(self, sizes):
         self.num_layers = len(sizes)
         self.sizes = sizes
