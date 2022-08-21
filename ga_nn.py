@@ -43,14 +43,9 @@ def fitness (network):
         errors.append(pred - y)
 
 
-def rouletteWheel (pop, fitnesses):
-    sm = sum(fitnesses)
-    chosen = random.uniform(0, sm)
-    curr = 0
-    for i in range(len(pop)):
-        curr += fitnesses[i]
-        if (curr > chosen):
-            return pop[i]
+def rouletteWheel (pop, probs):    
+    chc = np.random.choice(range(len(pop)), p=probs)
+    return pop[chc]
 
 
 def crossover (par1, par2):
@@ -65,3 +60,51 @@ def crossover (par1, par2):
             child1.weights[i][j][rand2::], child2.weights[i][j][rand2::] = child2.weights[i][j][rand2::], child1.weights[i][j][rand2::]
 
     return child1, child2
+
+
+def mutation (child):
+    for i in range(len(sizes)-1):
+        rand = random.randint(sizes[i+1])
+        child.biases[i][rand] = np.random.randn()
+        rand2 = random.randint(sizes[i+1])
+        rand3 = random.randint(sizes[i])
+        child.weights[i][rand2][rand3] = np.random.randn()
+    
+    return child
+
+
+popsize = 40
+genome = [genPop() for _ in range(popsize)]
+bests = []
+epochs = 10
+
+for _ in epochs:
+
+    fitnesses = []
+
+    for i in genome:
+        fitnesses.append(fitness(i))
+
+    bests.append(min(fitnesses))
+
+    invSm = sum([1/k for k in fitnesses])
+    probs = [(1/k)/invSm for k in fitnesses]
+
+    selected = [rouletteWheel(genome, probs) for _ in range(popsize)]
+
+    childpop = []
+
+    for i in range(0, popsize, 2):
+
+        par1 = selected[i]
+        par2 = selected[i+1]
+
+        children = crossover(par1, par2)
+
+        child1 = mutation(children[0])
+        child2 = mutation(children[1])
+
+        childpop.append(child1)
+        childpop.append(child2)
+
+    genome = childpop
